@@ -22,7 +22,7 @@
 	var/static/list/shapes = list("cube", "sphere", "pyramid")
 
 	///the list of currently discovered techs
-	var/list/discovered_tech
+	var/list/discovered_tech = list()
 
 	///Contains images of all radial icons
 	var/static/list/radial_icons_cache = list()
@@ -82,21 +82,22 @@
 
 	find_tech = new find_tech()
 	var/missing_tech = length(find_tech.required_techs)
-	for(var/required_check in find_tech.required_techs)
-		if(is_type_in_list(required_check, discovered_tech))
+	for(var/discover_check in discovered_tech)
+		if(is_type_in_list(discover_check, find_tech.required_techs))
 			--missing_tech
 
 	if(missing_tech > 0)
 		to_chat(user, span_warning("You are missing [missing_tech] additional [missing_tech > 1 ? "technologies" : "technology"]!"))
 		return
 
-	if(!is_type_in_list(find_tech, discovered_tech))
-		discovered_tech += find_tech
+	if(!is_type_in_list(find_tech.type, discovered_tech))
+		discovered_tech.Add(find_tech.type)
 
 	var/obj/item/research_item/research_scrap/spawned_scrap = new /obj/item/research_item/research_scrap(get_turf(src))
 	spawned_scrap.spawning_item = find_tech.researched_item
 	spawned_scrap.spawning_tool = find_tech.required_tool
-	spawned_scrap.required_materials = find_tech.required_items
+	for(var/obj/adding_requirements in find_tech.required_crafting)
+		spawned_scrap.required_materials.Add(adding_requirements)
 	to_chat(user, span_notice("You finished researching!."))
 
 /obj/item/research_item/research_scrap
@@ -112,7 +113,7 @@
 	var/obj/spawning_tool
 
 	///the materials required for completion
-	var/list/required_materials
+	var/list/required_materials = list()
 
 /obj/item/research_item/research_scrap/examine(mob/user)
 	. = ..()
