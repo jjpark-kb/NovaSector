@@ -80,24 +80,23 @@
 		to_chat(user, span_warning("You were researching a dead end!"))
 		return
 
-	find_tech = new find_tech()
 	var/missing_tech = length(find_tech.required_techs)
-	for(var/discover_check in discovered_tech)
-		if(is_type_in_list(discover_check, find_tech.required_techs))
+	for(var/required_check in find_tech.required_techs)
+		if(locate(required_check) in discovered_tech)
 			--missing_tech
 
 	if(missing_tech > 0)
 		to_chat(user, span_warning("You are missing [missing_tech] additional [missing_tech > 1 ? "technologies" : "technology"]!"))
 		return
 
-	if(!is_type_in_list(find_tech.type, discovered_tech))
-		discovered_tech.Add(find_tech.type)
+	if(!locate(find_tech) in discovered_tech)
+		discovered_tech += find_tech
 
 	var/obj/item/research_item/research_scrap/spawned_scrap = new /obj/item/research_item/research_scrap(get_turf(src))
 	spawned_scrap.spawning_item = find_tech.researched_item
 	spawned_scrap.spawning_tool = find_tech.required_tool
-	for(var/obj/adding_requirements in find_tech.required_crafting)
-		spawned_scrap.required_materials.Add(adding_requirements)
+	for(var/adding_requirement in find_tech.required_crafting)
+		spawned_scrap.required_materials.Add(adding_requirement)
 	to_chat(user, span_notice("You finished researching!."))
 
 /obj/item/research_item/research_scrap
